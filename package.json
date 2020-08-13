@@ -1,0 +1,65 @@
+{
+  "name": "@fanoutio/next-eventstream",
+  "version": "0.0.1",
+  "author": "Fanout, Inc. <info@fanout.io>",
+  "description": "EventStream for Next.js",
+  "contributors": [
+    {
+      "name": "Katsuyuki Ohmuro",
+      "email": "kats@fanout.io"
+    },
+    {
+      "name": "Konstantin Bokarius",
+      "email": "kon@fanout.io"
+    }
+  ],
+  "main": "./build/index.js",
+  "module": "./build/index.es.js",
+  "jsnext:main": "build/index.es.js",
+  "types": "build/main.d.ts",
+  "scripts": {
+    "prepublishOnly": "npm run build",
+    "build": "npm run build-commonjs",
+    "build-commonjs": "npm run build-commonjs:clean && npm run build-commonjs:build",
+    "build-commonjs:clean": "rimraf build",
+    "build-commonjs:build": "rollup -c rollup.commonjs.config.js",
+    "lint": "npm run lint:tslint",
+    "lint:tslint": "tslint -c tslint.json 'src/**/*.ts' 'test/**/*.ts'",
+    "test": "TS_NODE_FILES=true TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\"}' mocha -r ts-node/register tests/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fanout/next-eventstream.git"
+  },
+  "readmeFilename": "README.md",
+  "keywords": [
+    "grip",
+    "fanout",
+    "pushpin",
+    "realtime",
+    "push",
+    "publish",
+    "express",
+    "connect",
+    "nextjs"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-json": "^4.0.2",
+    "@types/mocha": "^7.0.2",
+    "mocha": "^7.1.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^1.32.0",
+    "rollup-plugin-peer-deps-external": "^2.2.2",
+    "rollup-plugin-typescript2": "^0.26.0",
+    "ts-node": "^8.6.2",
+    "tslib": "^1.11.1",
+    "tslint": "^6.1.1",
+    "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "@fanoutio/grip": "^3.0.0-beta.1",
+    "callable-instance": "^2.0.0"
+  }
+}

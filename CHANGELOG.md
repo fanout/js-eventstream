@@ -1,4 +1,4 @@
-# @fanoutio/nextjs-eventstream Changelog
+# @fanoutio/connect-eventstream Changelog
 
 All notable changes to this project will be documented in this file.
 

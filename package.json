@@ -1,8 +1,8 @@
 {
-  "name": "@fanoutio/next-eventstream",
-  "version": "0.0.1",
+  "name": "@fanoutio/connect-eventstream",
+  "version": "0.0.1-beta.1",
   "author": "Fanout, Inc. <info@fanout.io>",
-  "description": "EventStream for Next.js",
+  "description": "Connect-compatible middleware that enables the easy creation of EventStream endpoints",
   "contributors": [
     {
       "name": "Katsuyuki Ohmuro",
@@ -29,7 +29,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fanout/next-eventstream.git"
+    "url": "https://github.com/fanout/connect-eventstream.git"
   },
   "readmeFilename": "README.md",
   "keywords": [
@@ -47,6 +47,8 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.2",
     "@rollup/plugin-json": "^4.0.2",
+    "@types/accepts": "^1.3.5",
+    "@types/debug": "^4.1.5",
     "@types/mocha": "^7.0.2",
     "mocha": "^7.1.1",
     "rimraf": "^3.0.2",
@@ -59,7 +61,10 @@
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "@fanoutio/grip": "^3.0.0-beta.1",
-    "callable-instance": "^2.0.0"
+    "@fanoutio/connect-grip": "0.1.0-beta.10",
+    "@fanoutio/grip": "^3.0.0-beta.3",
+    "accepts": "^1.3.7",
+    "callable-instance": "^2.0.0",
+    "debug": "^4.1.1"
   }
 }

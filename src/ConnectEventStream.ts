@@ -13,7 +13,7 @@ import { GripPublisherSpec } from './data/GripPublisherSpec';
 import IServerSentEvent from "./data/IServerSentEvent";
 import AddressedEvents from "./AddressedEvents";
 
-import ChannelWritable from './stream/ChannelWritable';
+import ChannelPublisher from './ChannelPublisher';
 import ServerSentEventsSerializer from './stream/ServerSentEventsSerializer';
 import AddressedEventsReadable from './stream/AddressedEventsReadable';
 
@@ -29,6 +29,8 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
     prefix: string;
     addressedEvents: AddressedEvents;
+
+    channelPublishers: { [channel: string] : ChannelPublisher; } = {};
 
     constructor(params: null | GripPublisherSpec | IGripEventStreamConfig) {
         super('route');
@@ -69,8 +71,15 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         await this.addressedEvents.addressedEvent({ event, channel, });
     }
 
+    getChannelPublisher(channel: string) {
+        if (this.channelPublishers[channel] == null) {
+            this.channelPublishers[channel] = new ChannelPublisher(this, channel);
+        }
+        return this.channelPublishers[channel];
+    }
+
     createChannelWritable(channel: string) {
-        return new ChannelWritable(this, channel);
+        return this.getChannelPublisher(channel).createWritable();
     }
 
     buildChannels(req: IncomingMessage, channels: string[]): string[] {

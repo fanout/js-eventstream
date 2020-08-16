@@ -65,8 +65,9 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
                     event: event.event,
                     data: JSON.stringify(event.data),
                 });
-                await publisher.publishHttpStream(channel, encodedEvent)
-                    .then(() => debug("grip:published", { channel, event }));
+                debug("grip:publishing", { channel, event });
+                await publisher.publishHttpStream(channel, encodedEvent);
+                debug("grip:published", { channel, event });
             });
         } else {
             debug('Events will not publish to GRIP because no gripPublisher');

@@ -29,8 +29,6 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
     prefix: string;
     addressedEvents: AddressedEvents;
 
-    _channelWritables: object = {};
-
     constructor(params: null | GripPublisherSpec | IGripEventStreamConfig) {
         super('route');
 
@@ -66,11 +64,8 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         this.addressedEvents.addListener(e => debug('connect-eventstream event', e));
     }
 
-    getChannelWritable(channel: string) {
-        if (this._channelWritables[channel] == null) {
-            this._channelWritables[channel] = new ChannelWritable(this, channel);
-        }
-        return this._channelWritables[channel];
+    createChannelWritable(channel: string) {
+        return new ChannelWritable(this, channel);
     }
 
     buildChannels(req: IncomingMessage, channels: string[]): string[] {

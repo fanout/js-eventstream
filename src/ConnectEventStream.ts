@@ -46,7 +46,6 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
         prefix = prefix ?? 'events-';
 
-        let gripPublisher = null;
         if (gripParam != null) {
             debug("Initializing ConnectGrip with grip", gripParam);
             debug("Initializing ConnectGrip with prefix", prefix);
@@ -57,7 +56,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
 
         if (!this.connectGrip) {
-            debug('Events will not publish to grip because no gripPublisher', gripPublisher);
+            debug('Events will not publish to grip because no gripPublisher');
         }
         this.prefix = prefix;
 

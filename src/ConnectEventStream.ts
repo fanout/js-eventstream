@@ -7,7 +7,7 @@ import Debug from 'debug';
 
 import { ConnectGrip, ConnectGripApiRequest, ConnectGripApiResponse, } from "@fanoutio/connect-grip";
 
-import IHandlerOptions from './data/IHandlerOptions';
+import IChannelsBuilder from "./data/IChannelsBuilder";
 import IGripEventStreamConfig from './data/IGripEventStreamConfig';
 import { GripPublisherSpec } from './data/GripPublisherSpec';
 
@@ -22,11 +22,6 @@ import { KEEP_ALIVE_TIMEOUT, } from './constants';
 const debug = Debug('connect-eventstream');
 
 type Handler = (req: IncomingMessage, res: ServerResponse, fn: Function) => void;
-type AsyncHandler = (req: IncomingMessage, res: ServerResponse) => Promise<void>;
-
-type EventStreamRequest = IncomingMessage & {
-    eventStream?: IHandlerOptions,
-};
 
 export default class ConnectEventStream extends CallableInstance<[IncomingMessage, ServerResponse, Function], void> {
 
@@ -80,96 +75,88 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         return this._channelWritables[channel];
     }
 
-    createAsyncHandler(options?: IHandlerOptions): AsyncHandler;
-    createAsyncHandler(channels: string[]): AsyncHandler;
-    createAsyncHandler(...channels: string[]): AsyncHandler;
-    createAsyncHandler(...params: any[]): AsyncHandler {
-        debug("Creating Async Handler");
-        const options = this.parseParams(...params);
-        return async (req: ConnectGripApiRequest, res: ConnectGripApiResponse) => {
-            debug("Async Handler Running");
-            await this.run(req, res, options);
-        };
+    buildChannels(req: IncomingMessage, channels: string[]): string[] {
+
+        const regex = /(?:{([_A-Za-z][_A-Za-z0-9]*)})/g;
+
+        // In Express, req will have a params property that matches the pieces of the URL
+        // e.g., path: /api/channel-:channelId
+        // Request URL: /api/channel-test
+        // req.params: { "channelId": "test" }
+
+        // In Next.js, req will have a query property that matches a route segment.
+        // (Unlike Express, the dynamic part needs to be an entire segment.)
+        // e.g, path: /api/channel/[channelId].ts
+        // Request URL: /api/channel/test
+        // req.query: { "channelId": "test" }
+
+        let paramsObj: object | null = null;
+
+        const reqAsAny = req as any;
+        if (reqAsAny.params != null) {
+            // Note: Express's req also has a req.query that matches the query params from the
+            // search part of the URL.  For this reason we test for Express first
+            paramsObj = reqAsAny.params;
+        } else if (reqAsAny.query != null) {
+            paramsObj = reqAsAny.query;
+        }
+
+        return channels.map(ch => ch.replace(regex, (_substring, token1) => {
+            return paramsObj?.[token1] ?? '';
+        }));
+
     }
 
-    parseParams(options: IHandlerOptions): IHandlerOptions;
-    parseParams(channels: string[]): IHandlerOptions;
-    parseParams(...channels: string[]): IHandlerOptions;
-    parseParams(...params: any[]): IHandlerOptions {
+    route(...channelNames: string[]): Handler;
+    route(channelNames: string[]): Handler;
+    route(channelBuilder: IChannelsBuilder): Handler;
+    route(...params: any[]): Handler {
 
-        debug("Parsing options");
-        let options: IHandlerOptions;
+        let channelsBuilder: IChannelsBuilder;
 
-        let channels: null | string[] = null;
         if (params.length === 0) {
-            debug("No parameters given");
-            channels = [];
-        } else if (typeof params[0] === 'string') {
-            debug("First parameter is a string, treating all parameters as channels");
-            channels = params.filter(x => typeof x === 'string');
-        } else if (Array.isArray(params[0])) {
-            debug("First parameter is an array, treating as array of channels");
-            channels = params[0].filter(x => typeof x === 'string');
+            throw new Error('connectEventStream must be called with at least one parameter.');
         }
 
-        if (channels != null) {
-            debug("Parsed channel names", channels);
-            options = {
-                channels,
-            };
+        if (typeof params[0] === 'function') {
+            debug("Treating parameter as channel builder function");
+            channelsBuilder = params[0];
         } else {
-            debug("Treating parameter as options object");
-            options = params[0];
-        }
+            // Channel names is
+            let channelNames: string[];
 
-        return options;
-    }
-
-    route(options: IHandlerOptions): Handler;
-    route(channels: string[]): Handler;
-    route(...channels: string[]): Handler;
-    route(req: IncomingMessage, res: ServerResponse, fn: Function): void;
-    route(req: IncomingMessage, res: ServerResponse): Promise<void>;
-    route(...params: any[]): void | Handler | Promise<void> {
-
-        if (params[0] != null && params[0] instanceof IncomingMessage) {
-
-            if (params.length === 3) {
-
-                debug("Called with 3 parameters, running as Connect middleware with default values.");
-
-                const [ req, res, fn ] = params;
-                this.exec(req, res, fn);
-
-            } else if (params.length === 2) {
-
-                // This object is being called directly as a Nextjs handler
-                // that uses default values
-
-                debug("Called with 2 parameters, running as async handler with default values.");
-                const [ req, res ] = params;
-                return this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse);
-
+            if (Array.isArray(params[0])) {
+                debug("Parameter is array, treating as list of channel names");
+                channelNames = params[0];
+            } else {
+                debug("Parameters are spread, treating as list of channel names");
+                channelNames = params;
             }
-
-        } else {
-
-            debug("Called with configuration data, configuring and returning Connect middleware.");
-            const options = this.parseParams(...params);
-
-            return (req: IncomingMessage, res: ServerResponse, fn: Function) => {
-                const eventStreamRequest = req as EventStreamRequest;
-                eventStreamRequest.eventStream = options;
-                this.exec(eventStreamRequest, res, fn);
-            };
-
+            channelsBuilder = (req) => this.buildChannels(req, channelNames);
         }
+
+        debug("Called with configuration data, configuring and returning Connect middleware.");
+
+        return (...invoke: [IncomingMessage, ServerResponse, Function]): void | Promise<void> => {
+            const [req, res, fn] = invoke;
+
+            if (invoke.length === 3) {
+                debug("Called with 3 params, assume we want to behave as Connect middleware.");
+                // Called with 3, assume we want to behave as Connect middleware.
+                this.exec(req, res, channelsBuilder, fn);
+                return;
+            } else if (invoke.length === 2) {
+                debug("Called with 2 params, assume we want to behave as Async handler.");
+                // Called with 2 params, assume we want to behave as Next.js handler.
+                return Promise.resolve(this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channelsBuilder));
+            }
+        };
 
     }
 
-    exec(req: IncomingMessage, res: ServerResponse, fn: Function) {
+    exec(req: IncomingMessage, res: ServerResponse, channelsBuilder: IChannelsBuilder, fn: Function) {
         let err: Error | undefined;
-        this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, (req as EventStreamRequest).eventStream)
+        this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channelsBuilder)
             .catch(ex => err = ex)
             .then(() => {
                 if (err !== undefined) {
@@ -180,7 +167,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
             });
     }
 
-    async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, eventStreamOptions?: IHandlerOptions) {
+    async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, channelsBuilder: IChannelsBuilder) {
 
         debug("Beginning NextjsEventStream.run");
 
@@ -221,27 +208,12 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
         debug("'last-event-id' header value is", lastEventId);
 
-        const channels = eventStreamOptions?.channels?.slice() ?? [];
-        const readChannelsFromQuery = eventStreamOptions?.channelsFromQuery ?? false;
-        const channelParamName = typeof readChannelsFromQuery === 'string' ? readChannelsFromQuery : 'channel';
-        if (channels.length === 0 || readChannelsFromQuery !== false) {
-            debug("Getting channels from query parameter", channelParamName);
-            const parsedUrl = new URL(req.url!, `http://${req.headers['host']}`);
-            const queryParams = parsedUrl.searchParams.getAll(channelParamName);
-            for (const value of queryParams) {
-                if (!channels.includes(value)) {
-                    channels.push(value);
-                }
-            }
-        }
+        const channels = channelsBuilder(req);
 
         if (channels.length === 0) {
             debug("No specified channels.");
             res.statusCode = 400;
             let message = `No specified channels.`;
-            if (readChannelsFromQuery !== false) {
-                message += ' Specify the channels to read from using the ?' + readChannelsFromQuery + ' query parameter.';
-            }
             res.end(`${message}\n`);
             return;
         }

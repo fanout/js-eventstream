@@ -1,4 +1,3 @@
-import { EventEmitter } from 'events';
 import { IncomingMessage, ServerResponse, } from 'http';
 
 import accepts from 'accepts';
@@ -10,6 +9,8 @@ import { ConnectGrip, ConnectGripApiRequest, ConnectGripApiResponse, } from "@fa
 import IChannelsBuilder from "./data/IChannelsBuilder";
 import IGripEventStreamConfig from './data/IGripEventStreamConfig';
 import { GripPublisherSpec } from './data/GripPublisherSpec';
+
+import AddressedEvents from "./AddressedEvents";
 
 import ChannelWritable from './stream/ChannelWritable';
 import ServerSentEventsSerializer from './stream/ServerSentEventsSerializer';
@@ -26,7 +27,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
     connectGrip: ConnectGrip;
 
     prefix: string;
-    addressedEvents: EventEmitter;
+    addressedEvents: AddressedEvents;
 
     _channelWritables: object = {};
 
@@ -61,8 +62,8 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         this.prefix = prefix;
 
         // all events written to all channels as { channel, event } objects
-        this.addressedEvents = new EventEmitter();
-        this.addressedEvents.on('addressedEvent', e => debug('connect-eventstream event', e));
+        this.addressedEvents = new AddressedEvents();
+        this.addressedEvents.addListener(e => debug('connect-eventstream event', e));
     }
 
     getChannelWritable(channel: string) {

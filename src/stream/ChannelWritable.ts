@@ -1,6 +1,7 @@
-import { EventEmitter } from 'events';
 import { Writable } from 'stream';
 import Debug from 'debug';
+
+import AddressedEvents from "../AddressedEvents";
 
 import ConnectEventStream from '../ConnectEventStream';
 import GripWritable from './GripWritable';
@@ -11,7 +12,7 @@ const debug = Debug('connect-eventstream');
 export default class ChannelWritable extends Writable {
 
     private readonly gripWritable?: GripWritable;
-    private readonly addressedEvents: EventEmitter;
+    private readonly addressedEvents: AddressedEvents;
     private readonly channel: string;
 
     constructor(parent: ConnectEventStream, channel: string) {
@@ -34,8 +35,10 @@ export default class ChannelWritable extends Writable {
         }
     }
 
-    _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
-        this.addressedEvents.emit('addressedEvent', { event, channel: this.channel });
+    async _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
+        debug("ChannelWritable.write");
+
+        await this.addressedEvents.addressedEvent({ event, channel: this.channel });
         if (this.gripWritable == null) {
             callback();
             return;

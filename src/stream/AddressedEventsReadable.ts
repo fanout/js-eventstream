@@ -1,18 +1,18 @@
-import { EventEmitter } from 'events';
 import { Readable } from 'stream';
 
 import Debug from 'debug';
 
+import AddressedEvents from "../AddressedEvents";
 import IAddressedEvent from '../data/IAddressedEvent';
 
 const debug = Debug('connect-eventstream');
 
 export default class AddressedEventsReadable extends Readable {
-    private readonly addressedEvents: EventEmitter;
+    private readonly addressedEvents: AddressedEvents;
     private readonly channels: string[];
     private listenHandle: (() => void) | null;
 
-    constructor(addressedEvents: EventEmitter, channels: string[]) {
+    constructor(addressedEvents: AddressedEvents, channels: string[]) {
         super({
             objectMode: true,
         });
@@ -26,16 +26,11 @@ export default class AddressedEventsReadable extends Readable {
         debug('AddressedEventsReadable _read');
         if (this.listenHandle == null) {
             debug('AddressedEventsReadable setting up listener');
-            const listener = (addressedEvent: IAddressedEvent) => {
+            this.listenHandle = this.addressedEvents.addListener((addressedEvent: IAddressedEvent) => {
                 if (this.channels.includes(addressedEvent.channel)) {
                     this.push(addressedEvent.event);
                 }
-            };
-            this.addressedEvents.on('addressedEvent', listener);
-            this.listenHandle = () => {
-                debug('AddressedEventsReadable removing listener');
-                this.addressedEvents.removeListener('addressedEvent', listener);
-            };
+            });
         }
     }
 

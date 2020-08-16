@@ -7,16 +7,16 @@ export default class ChannelPublisher {
     private readonly parent: ConnectEventStream;
     private readonly channel: string;
 
-    constructor(parent: ConnectEventStream, channel: string) {
+    public constructor(parent: ConnectEventStream, channel: string) {
         this.parent = parent;
         this.channel = channel;
     }
 
-    async publishEvent(event: IServerSentEvent) {
+    public async publishEvent(event: IServerSentEvent) {
         await this.parent.publishEvent(this.channel, event);
     }
 
-    createWritable() {
+    public createWritable() {
         return new ChannelWritable(this);
     }
 

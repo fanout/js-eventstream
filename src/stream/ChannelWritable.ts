@@ -10,14 +10,14 @@ export default class ChannelWritable extends Writable {
 
     private readonly channelPublisher: ChannelPublisher;
 
-    constructor(channelPublisher: ChannelPublisher) {
+    public constructor(channelPublisher: ChannelPublisher) {
         super({
             objectMode: true,
         });
         this.channelPublisher = channelPublisher;
     }
 
-    async _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
+    public async _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
         let err: Error | undefined;
         try {
             debug("ChannelWritable.write");

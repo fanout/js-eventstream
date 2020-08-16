@@ -12,7 +12,7 @@ export default class AddressedEventsReadable extends Readable {
     private readonly channels: string[];
     private listenHandle: (() => void) | null;
 
-    constructor(addressedEvents: AddressedEvents, channels: string[]) {
+    public constructor(addressedEvents: AddressedEvents, channels: string[]) {
         super({
             objectMode: true,
         });
@@ -22,7 +22,7 @@ export default class AddressedEventsReadable extends Readable {
         this.channels = channels;
     }
 
-    _read(_size: number) {
+    public _read(_size: number) {
         debug('AddressedEventsReadable _read');
         if (this.listenHandle == null) {
             debug('AddressedEventsReadable setting up listener');
@@ -34,7 +34,7 @@ export default class AddressedEventsReadable extends Readable {
         }
     }
 
-    _destroy(error: Error | null, callback: (error?: (Error | null)) => void) {
+    public _destroy(error: Error | null, callback: (error?: (Error | null)) => void) {
         debug('AddressedEventsReadable _destroy');
         if (this.listenHandle != null) {
             this.listenHandle();

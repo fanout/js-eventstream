@@ -8,7 +8,7 @@ export default class AddressedEvents {
 
     private listeners: Listener[] = [];
 
-    addListener(fn: Listener) {
+    public addListener(fn: Listener) {
 
         this.listeners.push(fn);
         debug("AddressedEvents listener added, " + this.listeners.length + " listeners");
@@ -20,7 +20,7 @@ export default class AddressedEvents {
 
     }
 
-    async addressedEvent(event: any) {
+    public async addressedEvent(event: any) {
 
         debug("Calling addressedEvent with " + this.listeners.length + " listeners");
         for (const fn of this.listeners) {

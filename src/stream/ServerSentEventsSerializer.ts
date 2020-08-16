@@ -6,15 +6,15 @@ import { encodeEvent } from '../utils/textEventStream';
 import { KEEP_ALIVE_TIMEOUT } from '../constants';
 
 export default class ServerSentEventsSerializer extends Transform {
-    keepAliveTimer: NodeJS.Timeout | null;
+    private keepAliveTimer: NodeJS.Timeout | null;
 
-    constructor () {
+    public constructor () {
         super({ writableObjectMode: true });
         this.keepAliveTimer = null;
         this.setupKeepAliveTimer();
     }
 
-    _transform(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
+    public _transform(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
         try {
             this.setupKeepAliveTimer();
             const encodedEvent = encodeEvent({
@@ -29,7 +29,7 @@ export default class ServerSentEventsSerializer extends Transform {
         callback();
     }
 
-    setupKeepAliveTimer () {
+    private setupKeepAliveTimer () {
         if (this.keepAliveTimer != null) {
             clearInterval(this.keepAliveTimer);
             this.keepAliveTimer = null;

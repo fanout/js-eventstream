@@ -25,14 +25,11 @@ const debug = Debug('connect-eventstream');
 
 export default class ConnectEventStream extends CallableInstance<[IncomingMessage, ServerResponse, Function], void> {
 
-    connectGrip: ConnectGrip;
+    private readonly addressedEvents: AddressedEvents;
+    private readonly channelPublishers: { [channel: string] : ChannelPublisher; } = {};
+    private readonly connectGrip: ConnectGrip;
 
-    prefix: string;
-    addressedEvents: AddressedEvents;
-
-    channelPublishers: { [channel: string] : ChannelPublisher; } = {};
-
-    constructor(params: null | GripPublisherSpec | IGripEventStreamConfig) {
+    public constructor(params: null | GripPublisherSpec | IGripEventStreamConfig) {
         super('route');
 
         let gripParam: GripPublisherSpec;
@@ -57,8 +54,6 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
             });
         }
 
-        this.prefix = prefix;
-
         // all events written to all channels as { channel, event } objects
         this.addressedEvents = new AddressedEvents();
         this.addressedEvents.addListener(e => debug('connect-eventstream event', e));
@@ -78,22 +73,22 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
     }
 
-    async publishEvent(channel: string, event: IServerSentEvent) {
+    public async publishEvent(channel: string, event: IServerSentEvent) {
         await this.addressedEvents.addressedEvent({ event, channel, });
     }
 
-    getChannelPublisher(channel: string) {
+    public getChannelPublisher(channel: string) {
         if (this.channelPublishers[channel] == null) {
             this.channelPublishers[channel] = new ChannelPublisher(this, channel);
         }
         return this.channelPublishers[channel];
     }
 
-    createChannelWritable(channel: string) {
+    public createChannelWritable(channel: string) {
         return this.getChannelPublisher(channel).createWritable();
     }
 
-    buildChannels(req: IncomingMessage, channels: string[]): string[] {
+    private buildChannels(req: IncomingMessage, channels: string[]): string[] {
 
         const regex = /(?:{([_A-Za-z][_A-Za-z0-9]*)})/g;
 
@@ -125,10 +120,10 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
     }
 
-    route(...channelNames: string[]): Function;
-    route(channelNames: string[]): Function;
-    route(channelBuilder: IChannelsBuilder): Function;
-    route(...params: any[]): Function {
+    public route(...channelNames: string[]): Function;
+    public route(channelNames: string[]): Function;
+    public route(channelBuilder: IChannelsBuilder): Function;
+    public route(...params: any[]): Function {
 
         let channelsBuilder: IChannelsBuilder;
 
@@ -179,7 +174,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
     }
 
-    async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, channelsBuilder: IChannelsBuilder) {
+    private async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, channelsBuilder: IChannelsBuilder) {
 
         debug("Beginning NextjsEventStream.run");
 

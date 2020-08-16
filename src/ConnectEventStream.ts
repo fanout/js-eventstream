@@ -10,6 +10,7 @@ import IChannelsBuilder from "./data/IChannelsBuilder";
 import IGripEventStreamConfig from './data/IGripEventStreamConfig';
 import { GripPublisherSpec } from './data/GripPublisherSpec';
 
+import IServerSentEvent from "./data/IServerSentEvent";
 import AddressedEvents from "./AddressedEvents";
 
 import ChannelWritable from './stream/ChannelWritable';
@@ -62,6 +63,10 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         // all events written to all channels as { channel, event } objects
         this.addressedEvents = new AddressedEvents();
         this.addressedEvents.addListener(e => debug('connect-eventstream event', e));
+    }
+
+    async publishEvent(channel: string, event: IServerSentEvent) {
+        await this.addressedEvents.addressedEvent({ event, channel, });
     }
 
     createChannelWritable(channel: string) {

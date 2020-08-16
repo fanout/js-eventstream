@@ -57,14 +57,25 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
             });
         }
 
-        if (!this.connectGrip) {
-            debug('Events will not publish to grip because no gripPublisher');
-        }
         this.prefix = prefix;
 
         // all events written to all channels as { channel, event } objects
         this.addressedEvents = new AddressedEvents();
         this.addressedEvents.addListener(e => debug('connect-eventstream event', e));
+
+        if (this.connectGrip != null) {
+            const publisher = this.connectGrip.getPublisher();
+            this.addressedEvents.addListener(async ({ channel, event, }) => {
+                const encodedEvent = encodeEvent({
+                    event: event.event,
+                    data: JSON.stringify(event.data),
+                });
+                await publisher.publishHttpStream(channel, encodedEvent)
+                    .then(() => debug("grip:published", { channel, event }));
+            });
+        } else {
+            debug('Events will not publish to GRIP because no gripPublisher');
+        }
     }
 
     async publishEvent(channel: string, event: IServerSentEvent) {

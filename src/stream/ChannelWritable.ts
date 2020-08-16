@@ -1,55 +1,40 @@
 import { Writable } from 'stream';
 import Debug from 'debug';
 
-import ConnectEventStream from "../ConnectEventStream";
 import ChannelPublisher from "../ChannelPublisher";
-import GripWritable from './GripWritable';
 import IServerSentEvent from '../data/IServerSentEvent';
 
 const debug = Debug('connect-eventstream');
 
 export default class ChannelWritable extends Writable {
 
-    private readonly gripWritable?: GripWritable;
     private readonly channelPublisher: ChannelPublisher;
 
-    constructor(channelPublisher: ChannelPublisher, parent: ConnectEventStream, channel: string) {
+    constructor(channelPublisher: ChannelPublisher) {
         super({
             objectMode: true,
         });
         this.channelPublisher = channelPublisher;
-
-        if (parent.connectGrip != null) {
-            this.gripWritable = new GripWritable(parent.connectGrip.getPublisher(), channel);
-            this.gripWritable.on('grip:published', ({ event, channel }) => debug('published to gripPublisher', channel, event));
-
-            // re-emit errors from 'channel' so user can respond to them
-            // this.gripWritable.on('error', (error) => channel.emit('error', error))
-
-            this.gripWritable.on('error', (_error) => {
-                console.warn('Error publishing via GRIP. This happens. Giving up on this event.');
-            });
-        }
     }
 
     async _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
-        debug("ChannelWritable.write");
+        let err: Error | undefined;
+        try {
+            debug("ChannelWritable.write");
 
-        await this.channelPublisher.publishEvent(event);
-        if (this.gripWritable == null) {
-            callback();
-            return;
+            await this.channelPublisher.publishEvent(event);
+        } catch(ex) {
+            err = ex instanceof Error ? ex : new Error(ex);
         }
 
-        // Give backpressure to anyone piping to this
-        if (this.gripWritable.write(event, (error) => {
-            if (error != null) {
-                this.emit('grip:failedToPublish', { event, error });
-            }
-        })) {
-            callback();
+        // The above is an async method that doesn't return until the publish has finished
+        // (if GRIP is enabled then it won't return until GRIP publish has finished)
+        // For this reason this should apply backpressure to the writing.
+
+        if (err) {
+            callback(err);
         } else {
-            this.gripWritable.once('drain', () => callback());
+            callback();
         }
     }
 }

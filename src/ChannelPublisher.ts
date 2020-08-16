@@ -17,7 +17,7 @@ export default class ChannelPublisher {
     }
 
     createWritable() {
-        return new ChannelWritable(this, this.parent, this.channel);
+        return new ChannelWritable(this);
     }
 
 }

@@ -216,7 +216,8 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
         debug("'last-event-id' header value is", lastEventId);
 
-        const channels = channelsBuilder(req);
+        const channelsBuilderResult = channelsBuilder(req);
+        const channels = Array.isArray(channelsBuilderResult) ? channelsBuilderResult : [ channelsBuilderResult ];
 
         if (channels.length === 0) {
             debug("No specified channels.");

@@ -21,8 +21,6 @@ import { KEEP_ALIVE_TIMEOUT, } from './constants';
 
 const debug = Debug('connect-eventstream');
 
-type Handler = (req: IncomingMessage, res: ServerResponse, fn: Function) => void;
-
 export default class ConnectEventStream extends CallableInstance<[IncomingMessage, ServerResponse, Function], void> {
 
     connectGrip: ConnectGrip;
@@ -107,10 +105,10 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
     }
 
-    route(...channelNames: string[]): Handler;
-    route(channelNames: string[]): Handler;
-    route(channelBuilder: IChannelsBuilder): Handler;
-    route(...params: any[]): Handler {
+    route(...channelNames: string[]): Function;
+    route(channelNames: string[]): Function;
+    route(channelBuilder: IChannelsBuilder): Function;
+    route(...params: any[]): Function {
 
         let channelsBuilder: IChannelsBuilder;
 
@@ -137,34 +135,28 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
         debug("Called with configuration data, configuring and returning Connect middleware.");
 
-        return (...invoke: [IncomingMessage, ServerResponse, Function]): void | Promise<void> => {
-            const [req, res, fn] = invoke;
+        return async (req: IncomingMessage, res: ServerResponse, fn: Function): Promise<void> => {
 
-            if (invoke.length === 3) {
-                debug("Called with 3 params, assume we want to behave as Connect middleware.");
-                // Called with 3, assume we want to behave as Connect middleware.
-                this.exec(req, res, channelsBuilder, fn);
-                return;
-            } else if (invoke.length === 2) {
-                debug("Called with 2 params, assume we want to behave as Async handler.");
-                // Called with 2 params, assume we want to behave as Next.js handler.
-                return Promise.resolve(this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channelsBuilder));
+            const useFnForError = fn != null;
+            if (useFnForError) {
+                debug("Called with 3 params, will call fn(error) to handle errors.");
+            } else {
+                debug("Called with 2 params, will throw async exception to handle errors.");
             }
+
+            try {
+                await this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channelsBuilder);
+            } catch(ex) {
+                ex = ex instanceof Error ? ex : new Error(ex);
+                if (useFnForError) {
+                    fn(ex);
+                } else {
+                    throw ex;
+                }
+            }
+
         };
 
-    }
-
-    exec(req: IncomingMessage, res: ServerResponse, channelsBuilder: IChannelsBuilder, fn: Function) {
-        let err: Error | undefined;
-        this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channelsBuilder)
-            .catch(ex => err = ex)
-            .then(() => {
-                if (err !== undefined) {
-                    fn(err);
-                } else {
-                    fn();
-                }
-            });
     }
 
     async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, channelsBuilder: IChannelsBuilder) {

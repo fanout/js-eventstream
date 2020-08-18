@@ -7,7 +7,7 @@ import Debug from 'debug';
 import { ConnectGrip, ConnectGripApiRequest, ConnectGripApiResponse, } from "@fanoutio/connect-grip";
 
 import IChannelsBuilder from "./data/IChannelsBuilder";
-import IGripEventStreamConfig from './data/IGripEventStreamConfig';
+import IConnectEventStreamConfig from './data/IConnectEventStreamConfig';
 
 import IServerSentEvent from "./data/IServerSentEvent";
 import AddressedEvents from "./AddressedEvents";
@@ -28,7 +28,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
     private readonly channelPublishers: { [channel: string] : ChannelPublisher; } = {};
     private readonly connectGrip: ConnectGrip;
 
-    public constructor(params: IGripEventStreamConfig | null) {
+    public constructor(params: IConnectEventStreamConfig | null) {
         super('route');
 
         let {

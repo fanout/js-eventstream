@@ -1,5 +1,5 @@
 export { default as IAddressedEvent } from './data/IAddressedEvent';
-export { default as IGripEventStreamConfig } from './data/IGripEventStreamConfig';
+export { default as IConnectEventStreamConfig } from './data/IConnectEventStreamConfig';
 export { default as IChannelsBuilder } from './data/IChannelsBuilder';
 export { default as IServerSentEvent } from './data/IServerSentEvent';
 

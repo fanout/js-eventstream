@@ -44,6 +44,7 @@ publishing to all channels on that `Publisher` object.
 namespace GRIP events.
 
 ```javascript
+import { ConnectEventStream } from "@fanoutio/connect-eventstream";
 const connectEventStream = new ConnectEventStream({grip:process.env.GRIP_URI});
 ```
 
@@ -52,7 +53,7 @@ as events sent over the publisher will only be seen by requests listening on
 the same instance. This also means that if your application has several processes running,
 published events will only go to HTTP Connections on the process that publishes the message.
 To scale to more than one web server process, you'll need to use GRIP, and make sure you
-publish each event from one place.
+publish each event from one place.  
 
 ## To use in Express:
 
@@ -65,6 +66,7 @@ as the names of the channel(s) to listen to. Any tokens in the channel names del
 by their corresponding values from route parameters.
 
 ```javascript
+import { ConnectEventStream } from "@fanoutio/connect-eventstream";
 export const CHANNEL_NAME = 'test';
 const connectEventStream = new ConnectEventStream({grip:process.env.GRIP_URI});
 
@@ -84,6 +86,15 @@ See Publishing Events section below
 
 ## To use in Next.js:
 
+Next.js's development server continuously monitors and rebuilds files.
+Each time this happens, your singleton instance of ConnectEventStream
+will be recreated and previous instances will become unreachable.
+
+To keep the singleton accessible, use the `getConnectEventStreamSingleton`
+function exported from this package. This function takes an object as
+an argument, and this is the same object that you would pass to the
+constructor of `ConnectEventStream`.
+
 ### Add Routes
 
 Add API routes to your to Next.js application in the standard way, to handle requests to serve
@@ -94,9 +105,9 @@ and then export them as the default export from your route files.
 
 /lib/eventStream.js
 ```javascript
-import { ConnectEventStream } from "@fanoutio/connect-eventstream";
+import { getConnectEventStreamSingleton } from "@fanoutio/connect-eventstream";
 export const CHANNEL_NAME = 'test';
-export const connectEventStream = new ConnectEventStream({grip: process.env.GRIP_URL});
+export const connectEventStream = getConnectEventStreamSingleton({grip: process.env.GRIP_URL});
 ```
 
 /api/events.js
@@ -176,4 +187,17 @@ app.get('/', async (req, res, next) => {
         next();
     }
 });
+```
+
+### Multiple singletons
+
+`getConnectEventStreamSingleton` takes an optional second parameter.
+There may be advanced scenarios where you need more than one instance of
+`ConnectEventStream`. In such a case you can use this second parameter
+to identify each instance.
+
+```javascript
+import { getConnectEventStreamSingleton } from "@fanoutio/connect-eventstream";
+const connectEventStream1 = new getConnectEventStreamSingleton({grip:process.env.GRIP_URI_1});
+const connectEventStream2 = new getConnectEventStreamSingleton({grip:process.env.GRIP_URI_2});
 ```

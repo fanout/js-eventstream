@@ -8,7 +8,6 @@ import { ConnectGrip, ConnectGripApiRequest, ConnectGripApiResponse, } from "@fa
 
 import IChannelsBuilder from "./data/IChannelsBuilder";
 import IGripEventStreamConfig from './data/IGripEventStreamConfig';
-import { GripPublisherSpec } from './data/GripPublisherSpec';
 
 import IServerSentEvent from "./data/IServerSentEvent";
 import AddressedEvents from "./AddressedEvents";
@@ -29,27 +28,20 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
     private readonly channelPublishers: { [channel: string] : ChannelPublisher; } = {};
     private readonly connectGrip: ConnectGrip;
 
-    public constructor(params: null | GripPublisherSpec | IGripEventStreamConfig) {
+    public constructor(params: IGripEventStreamConfig | null) {
         super('route');
 
-        let gripParam: GripPublisherSpec;
-        let prefix: string | null;
+        let {
+            prefix,
+            grip,
+        } = params ?? {};
 
-        const paramsAsAny = params as any;
-        if (paramsAsAny?.grip != null) {
-            gripParam = paramsAsAny.grip;
-            prefix = paramsAsAny.prefix;
-        } else {
-            gripParam = paramsAsAny;
-            prefix = null;
-        }
         prefix = prefix ?? 'events-';
 
-        if (gripParam != null) {
-            debug("Initializing ConnectGrip with grip", gripParam);
-            debug("Initializing ConnectGrip with prefix", prefix);
+        if (grip != null) {
+            debug("Initializing ConnectGrip with", { prefix, grip, });
             this.connectGrip = new ConnectGrip({
-                grip: gripParam,
+                grip,
                 prefix,
             });
         }

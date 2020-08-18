@@ -5,4 +5,6 @@ export { default as IServerSentEvent } from './data/IServerSentEvent';
 
 export { default as ConnectEventStream } from './ConnectEventStream';
 
+export { getConnectEventStreamSingleton } from './utils/nextjs';
+
 export type { GripPublisherSpec } from './data/GripPublisherSpec';

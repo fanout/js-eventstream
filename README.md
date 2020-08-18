@@ -155,3 +155,25 @@ writable.end();
 There will be appropriate backpressure on this `Writeable` so that
 writing goes only as fast as events can be dispatched, which is especially important when
 publishing through GRIP.
+
+## Advanced Usage
+
+### Direct invocation
+
+If you wish to run `connect-eventstream`'s functionality directly, for example
+in a conditional way, you may call `connectEventStream.run(req, res, channels)`.
+
+```javascript
+app.get('/', async (req, res, next) => {
+    // Only do connectEventStream if header 'foo' has value 'bar' 
+    if (req.headers['foo'] === 'bar') {
+        try {
+            await connectEventStream.run(req, res, ['test']);
+        } catch(ex) {
+            next(ex instanceof Error ? ex : new Error(ex));
+        }
+    } else {
+        next();
+    }
+});
+```

@@ -151,8 +151,10 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
                 debug("Called with 2 params, will throw async exception to handle errors.");
             }
 
+            const channels = channelsBuilder(req);
+
             try {
-                await this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channelsBuilder);
+                await this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channels);
             } catch(ex) {
                 ex = ex instanceof Error ? ex : new Error(ex);
                 if (useFnForError) {
@@ -166,7 +168,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
     }
 
-    private async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, channelsBuilder: IChannelsBuilder) {
+    public async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, channels: string | string[]) {
 
         debug("Beginning NextjsEventStream.run");
 
@@ -207,8 +209,10 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
         debug("'last-event-id' header value is", lastEventId);
 
-        const channelsBuilderResult = channelsBuilder(req);
-        const channels = Array.isArray(channelsBuilderResult) ? channelsBuilderResult : [ channelsBuilderResult ];
+        channels = Array.isArray(channels) ? channels : [ channels ];
+        channels = channels
+            .map((x: any) => typeof x === 'string' ? x.trim() : '')
+            .filter(x => x != null && x !== '');
 
         if (channels.length === 0) {
             debug("No specified channels.");

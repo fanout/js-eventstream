@@ -32,13 +32,12 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         super('route');
 
         let {
-            prefix,
             grip,
+            gripPrefix,
         } = params ?? {};
 
-        prefix = prefix ?? 'events-';
-
         if (grip != null) {
+            const prefix = gripPrefix ?? 'events-';
             debug("Initializing ConnectGrip with", { prefix, grip, });
             this.connectGrip = new ConnectGrip({
                 grip,

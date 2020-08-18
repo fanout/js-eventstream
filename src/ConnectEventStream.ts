@@ -190,21 +190,21 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         debug("Type accepted by client");
 
         // Run ConnectGrip if it hasn't been run yet.
-        if (req.grip == null) {
+        if (req.grip == null && this.connectGrip != null) {
             debug("Running ConnectGrip");
             await this.connectGrip.run(req, res);
         }
 
-        const grip = req.grip;
-        if (grip.isProxied) {
+        const requestGrip = req.grip;
+        if (requestGrip?.isProxied) {
             debug("This is a GRIP-proxied request");
-            if (grip.needsSigned && !grip.isSigned) {
+            if (requestGrip.needsSigned && !requestGrip.isSigned) {
                 req.statusCode = 403;
                 res.end('GRIP Signature Invalid.\n');
                 return;
             }
         }
-        if (grip.isSigned) {
+        if (requestGrip?.isSigned) {
             debug("This is a GRIP-signed request");
         }
 
@@ -239,7 +239,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         ];
         debug("Added stream-open event");
 
-        if (grip.isProxied) {
+        if (requestGrip?.isProxied) {
             // Use a GRIP hold to keep a stream going
             const gripInstruct = res.grip.startInstruct();
             gripInstruct.setHoldStream();
@@ -258,7 +258,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
         res.write(joinEncodedEvents(events));
 
-        if (grip.isProxied) {
+        if (requestGrip?.isProxied) {
             debug('Exiting. Future events will be delivered via GRIP publishing.');
             res.end();
             return

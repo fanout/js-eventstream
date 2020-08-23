@@ -1,9 +1,8 @@
-import IServerSentEvent from "./data/IServerSentEvent";
-import ConnectEventStream from "./ConnectEventStream";
-import ChannelWritable from "./stream/ChannelWritable";
+import IServerSentEvent from './data/IServerSentEvent';
+import ConnectEventStream from './ConnectEventStream';
+import ChannelWritable from './stream/ChannelWritable';
 
 export default class ChannelPublisher {
-
     private readonly parent: ConnectEventStream;
     private readonly channel: string;
 
@@ -19,5 +18,4 @@ export default class ChannelPublisher {
     public createWritable() {
         return new ChannelWritable(this);
     }
-
 }

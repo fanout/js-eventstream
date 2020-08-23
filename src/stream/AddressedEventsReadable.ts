@@ -2,7 +2,7 @@ import { Readable } from 'stream';
 
 import Debug from 'debug';
 
-import AddressedEvents from "../AddressedEvents";
+import AddressedEvents from '../AddressedEvents';
 import IAddressedEvent from '../data/IAddressedEvent';
 
 const debug = Debug('connect-eventstream');
@@ -35,7 +35,7 @@ export default class AddressedEventsReadable extends Readable {
         }
     }
 
-    public _destroy(error: Error | null, callback: (error?: (Error | null)) => void) {
+    public _destroy(error: Error | null, callback: (error?: Error | null) => void) {
         debug('AddressedEventsReadable _destroy');
         if (this.listenHandle != null) {
             this.listenHandle();
@@ -43,5 +43,4 @@ export default class AddressedEventsReadable extends Readable {
         }
         super._destroy(error, callback);
     }
-
 }

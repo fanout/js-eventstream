@@ -8,7 +8,7 @@ import { KEEP_ALIVE_TIMEOUT } from '../constants';
 export default class ServerSentEventsSerializer extends Transform {
     private keepAliveTimer: ReturnType<typeof setTimeout> | null;
 
-    public constructor () {
+    public constructor() {
         super({ writableObjectMode: true });
         this.keepAliveTimer = null;
         this.setupKeepAliveTimer();
@@ -29,7 +29,7 @@ export default class ServerSentEventsSerializer extends Transform {
         callback();
     }
 
-    private setupKeepAliveTimer () {
+    private setupKeepAliveTimer() {
         if (this.keepAliveTimer != null) {
             clearInterval(this.keepAliveTimer);
             this.keepAliveTimer = null;
@@ -40,6 +40,6 @@ export default class ServerSentEventsSerializer extends Transform {
                 data: '',
             });
             this.push(encodedEvent);
-        }, KEEP_ALIVE_TIMEOUT * 1000)
+        }, KEEP_ALIVE_TIMEOUT * 1000);
     }
 }

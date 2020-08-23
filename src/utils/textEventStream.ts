@@ -14,7 +14,7 @@ const NEWLINE = '\n';
  * @returns text/event-stream encoded event
  */
 export function encodeEvent(fields?: object, comments?: string | string[]): string {
-    let event = ''
+    let event = '';
     if (comments != null) {
         if (!Array.isArray(comments)) {
             comments = [comments];
@@ -32,10 +32,10 @@ export function encodeEvent(fields?: object, comments?: string | string[]): stri
         }
     }
     event += NEWLINE;
-    return event
+    return event;
 }
 
-export function joinEncodedEvents(encodedEvents: string | string[]) : string {
-    encodedEvents = !Array.isArray(encodedEvents) ? [ encodedEvents ] : encodedEvents;
+export function joinEncodedEvents(encodedEvents: string | string[]): string {
+    encodedEvents = !Array.isArray(encodedEvents) ? [encodedEvents] : encodedEvents;
     return encodedEvents.join('\n\n');
 }

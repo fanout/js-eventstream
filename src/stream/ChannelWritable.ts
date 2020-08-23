@@ -1,13 +1,12 @@
 import { Writable } from 'stream';
 import Debug from 'debug';
 
-import ChannelPublisher from "../ChannelPublisher";
+import ChannelPublisher from '../ChannelPublisher';
 import IServerSentEvent from '../data/IServerSentEvent';
 
 const debug = Debug('connect-eventstream');
 
 export default class ChannelWritable extends Writable {
-
     private readonly channelPublisher: ChannelPublisher;
 
     public constructor(channelPublisher: ChannelPublisher) {
@@ -20,10 +19,10 @@ export default class ChannelWritable extends Writable {
     public async _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
         let err: Error | undefined;
         try {
-            debug("ChannelWritable.write");
+            debug('ChannelWritable.write');
 
             await this.channelPublisher.publishEvent(event);
-        } catch(ex) {
+        } catch (ex) {
             err = ex instanceof Error ? ex : new Error(ex);
         }
 

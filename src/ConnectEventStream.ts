@@ -1,44 +1,40 @@
-import { IncomingMessage, ServerResponse, } from 'http';
+import { IncomingMessage, ServerResponse } from 'http';
 
 import accepts from 'accepts';
 import CallableInstance from 'callable-instance';
 import Debug from 'debug';
 
-import { ServeGrip, ServeGripApiRequest, ServeGripApiResponse, } from "@fanoutio/serve-grip";
+import { ServeGrip, ServeGripApiRequest, ServeGripApiResponse } from '@fanoutio/serve-grip';
 
-import IChannelsBuilder from "./data/IChannelsBuilder";
+import IChannelsBuilder from './data/IChannelsBuilder';
 import IConnectEventStreamConfig from './data/IConnectEventStreamConfig';
 
-import IServerSentEvent from "./data/IServerSentEvent";
-import AddressedEvents from "./AddressedEvents";
+import IServerSentEvent from './data/IServerSentEvent';
+import AddressedEvents from './AddressedEvents';
 
 import ChannelPublisher from './ChannelPublisher';
 import ServerSentEventsSerializer from './stream/ServerSentEventsSerializer';
 import AddressedEventsReadable from './stream/AddressedEventsReadable';
 
-import { encodeEvent, joinEncodedEvents, } from './utils/textEventStream';
-import { flattenHttpHeaders, } from './utils/http';
-import { KEEP_ALIVE_TIMEOUT, } from './constants';
+import { encodeEvent, joinEncodedEvents } from './utils/textEventStream';
+import { flattenHttpHeaders } from './utils/http';
+import { KEEP_ALIVE_TIMEOUT } from './constants';
 
 const debug = Debug('connect-eventstream');
 
 export default class ConnectEventStream extends CallableInstance<[IncomingMessage, ServerResponse, Function], void> {
-
     private readonly addressedEvents: AddressedEvents;
-    private readonly channelPublishers: { [channel: string] : ChannelPublisher; } = {};
+    private readonly channelPublishers: { [channel: string]: ChannelPublisher } = {};
     private readonly serveGrip?: ServeGrip;
 
     public constructor(params: IConnectEventStreamConfig | null) {
         super('route');
 
-        let {
-            grip,
-            gripPrefix,
-        } = params ?? {};
+        let { grip, gripPrefix } = params ?? {};
 
         if (grip != null) {
             const prefix = gripPrefix ?? 'events-';
-            debug("Initializing ConnectGrip with", { prefix, grip, });
+            debug('Initializing ConnectGrip with', { prefix, grip });
             this.serveGrip = new ServeGrip({
                 grip,
                 prefix,
@@ -47,18 +43,18 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
         // all events written to all channels as { channel, event } objects
         this.addressedEvents = new AddressedEvents();
-        this.addressedEvents.addListener(e => debug('connect-eventstream event', e));
+        this.addressedEvents.addListener((e) => debug('connect-eventstream event', e));
 
         if (this.serveGrip != null) {
             const publisher = this.serveGrip.getPublisher();
-            this.addressedEvents.addListener(async ({ channel, event, }) => {
+            this.addressedEvents.addListener(async ({ channel, event }) => {
                 const encodedEvent = encodeEvent({
                     event: event.event,
                     data: JSON.stringify(event.data),
                 });
-                debug("grip:publishing", { channel, event });
+                debug('grip:publishing', { channel, event });
                 await publisher.publishHttpStream(channel, encodedEvent);
-                debug("grip:published", { channel, event });
+                debug('grip:published', { channel, event });
             });
         } else {
             debug('Events will not publish to GRIP because no gripPublisher');
@@ -66,7 +62,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
     }
 
     public async publishEvent(channel: string, event: IServerSentEvent) {
-        await this.addressedEvents.addressedEvent({ event, channel, });
+        await this.addressedEvents.addressedEvent({ event, channel });
     }
 
     public getChannelPublisher(channel: string) {
@@ -81,7 +77,6 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
     }
 
     private buildChannels(req: IncomingMessage, channels: string[]): string[] {
-
         const regex = /(?:{([_A-Za-z][_A-Za-z0-9]*)})/g;
 
         // In Express, req will have a params property that matches the pieces of the URL
@@ -106,17 +101,17 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
             paramsObj = reqAsAny.query;
         }
 
-        return channels.map(ch => ch.replace(regex, (_substring, token1) => {
-            return paramsObj?.[token1] ?? '';
-        }));
-
+        return channels.map((ch) =>
+            ch.replace(regex, (_substring, token1) => {
+                return paramsObj?.[token1] ?? '';
+            }),
+        );
     }
 
     public route(...channelNames: string[]): Function;
     public route(channelNames: string[]): Function;
     public route(channelBuilder: IChannelsBuilder): Function;
     public route(...params: any[]): Function {
-
         let channelsBuilder: IChannelsBuilder;
 
         if (params.length === 0) {
@@ -124,38 +119,37 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
 
         if (typeof params[0] === 'function') {
-            debug("Treating parameter as channel builder function");
+            debug('Treating parameter as channel builder function');
             channelsBuilder = params[0];
         } else {
             // Channel names is
             let channelNames: string[];
 
             if (Array.isArray(params[0])) {
-                debug("Parameter is array, treating as list of channel names");
+                debug('Parameter is array, treating as list of channel names');
                 channelNames = params[0];
             } else {
-                debug("Parameters are spread, treating as list of channel names");
+                debug('Parameters are spread, treating as list of channel names');
                 channelNames = params;
             }
             channelsBuilder = (req) => this.buildChannels(req, channelNames);
         }
 
-        debug("Called with configuration data, configuring and returning Connect middleware.");
+        debug('Called with configuration data, configuring and returning Connect middleware.');
 
         return async (req: IncomingMessage, res: ServerResponse, fn: Function): Promise<void> => {
-
             const useFnForError = fn != null;
             if (useFnForError) {
-                debug("Called with 3 params, will call fn(error) to handle errors.");
+                debug('Called with 3 params, will call fn(error) to handle errors.');
             } else {
-                debug("Called with 2 params, will throw async exception to handle errors.");
+                debug('Called with 2 params, will throw async exception to handle errors.');
             }
 
             const channels = channelsBuilder(req);
 
             try {
                 await this.run(req as ServeGripApiRequest, res as ServeGripApiResponse, channels);
-            } catch(ex) {
+            } catch (ex) {
                 ex = ex instanceof Error ? ex : new Error(ex);
                 if (useFnForError) {
                     fn(ex);
@@ -163,34 +157,31 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
                     throw ex;
                 }
             }
-
         };
-
     }
 
     public async run(req: ServeGripApiRequest, res: ServeGripApiResponse, channels: string | string[]) {
-
-        debug("Beginning NextjsEventStream.run");
+        debug('Beginning NextjsEventStream.run');
 
         const accept = accepts(req);
         const types = accept.types('text/event-stream');
         if (!types) {
-            debug("Type not accepted by client");
+            debug('Type not accepted by client');
             res.statusCode = 406;
             res.end('Not Acceptable.\n');
             return;
         }
-        debug("Type accepted by client");
+        debug('Type accepted by client');
 
         // Run ConnectGrip if it hasn't been run yet.
         if (req.grip == null && this.serveGrip != null) {
-            debug("Running ConnectGrip");
+            debug('Running ConnectGrip');
             await this.serveGrip.run(req, res);
         }
 
         const requestGrip = req.grip;
         if (requestGrip?.isProxied) {
-            debug("This is a GRIP-proxied request");
+            debug('This is a GRIP-proxied request');
             if (requestGrip.needsSigned && !requestGrip.isSigned) {
                 req.statusCode = 403;
                 res.end('GRIP Signature Invalid.\n');
@@ -198,7 +189,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
             }
         }
         if (requestGrip?.isSigned) {
-            debug("This is a GRIP-signed request");
+            debug('This is a GRIP-signed request');
         }
 
         const lastEventId = flattenHttpHeaders(req.headers['last-event-id']);
@@ -209,30 +200,30 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
         debug("'last-event-id' header value is", lastEventId);
 
-        channels = Array.isArray(channels) ? channels : [ channels ];
+        channels = Array.isArray(channels) ? channels : [channels];
         channels = channels
-            .map((x: any) => typeof x === 'string' ? x.trim() : '')
-            .filter(x => x != null && x !== '');
+            .map((x: any) => (typeof x === 'string' ? x.trim() : ''))
+            .filter((x) => x != null && x !== '');
 
         if (channels.length === 0) {
-            debug("No specified channels.");
+            debug('No specified channels.');
             res.statusCode = 400;
             let message = `No specified channels.`;
             res.end(`${message}\n`);
             return;
         }
 
-        debug("Listening for events on channels", channels);
+        debug('Listening for events on channels', channels);
 
         res.statusCode = 200;
 
         const events = [
             encodeEvent({
                 event: 'stream-open',
-                data: ''
+                data: '',
             }),
         ];
-        debug("Added stream-open event");
+        debug('Added stream-open event');
 
         if (requestGrip?.isProxied) {
             // Use a GRIP hold to keep a stream going
@@ -244,9 +235,9 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
                 data: '',
             });
             gripInstruct.setKeepAlive(keepAliveValue, KEEP_ALIVE_TIMEOUT);
-            debug("GRIP Instruction Headers", gripInstruct.toHeaders());
+            debug('GRIP Instruction Headers', gripInstruct.toHeaders());
         } else {
-            debug("Performing SSE over chunked HTTP");
+            debug('Performing SSE over chunked HTTP');
             res.setHeader('Connection', 'Transfer-Encoding');
             res.setHeader('Transfer-Encoding', 'chunked');
         }
@@ -256,7 +247,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         if (requestGrip?.isProxied) {
             debug('Exiting. Future events will be delivered via GRIP publishing.');
             res.end();
-            return
+            return;
         }
 
         debug('Starting subscription and piping from Addressed Events.');

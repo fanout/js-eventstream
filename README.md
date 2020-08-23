@@ -1,4 +1,4 @@
-# eventstream
+# js-eventstream
 
 Utility library to facilitate the creation of endpoints that implement the
 [server-sent events (SSE)](https://en.wikipedia.org/wiki/Server-sent_events)
@@ -14,7 +14,8 @@ Since this library is `connect`-compatible, it is usable with frameworks such as
 * [Next.js](https://nextjs.org/) *
 
 Additionally, this library is [GRIP-aware](http://pushpin.org/docs/protocols/grip/) for scaling.
-In fact, when running on serverless environments such as Next.js, you will almost always want
+
+* In fact, when running on serverless environments such as Next.js, you will almost always want
 to use GRIP to hold the stream open while your application publishes to it in short-lived connections.
 
 Supported GRIP servers include:

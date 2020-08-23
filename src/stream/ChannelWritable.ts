@@ -4,7 +4,7 @@ import Debug from 'debug';
 import ChannelPublisher from '../ChannelPublisher';
 import IServerSentEvent from '../data/IServerSentEvent';
 
-const debug = Debug('connect-eventstream');
+const debug = Debug('eventstream');
 
 export default class ChannelWritable extends Writable {
     private readonly channelPublisher: ChannelPublisher;

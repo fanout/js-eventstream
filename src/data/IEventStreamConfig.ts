@@ -1,6 +1,6 @@
 import { GripPublisherSpec } from './GripPublisherSpec';
 
-export default interface IConnectEventStreamConfig {
+export default interface IEventStreamConfig {
     grip?: GripPublisherSpec;
     gripPrefix?: string;
 }

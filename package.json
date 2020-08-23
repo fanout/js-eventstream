@@ -1,5 +1,5 @@
 {
-  "name": "@fanoutio/connect-eventstream",
+  "name": "@fanoutio/eventstream",
   "version": "0.0.1-beta.6",
   "author": "Fanout, Inc. <info@fanout.io>",
   "description": "Connect-compatible middleware that enables the easy creation of EventStream endpoints",
@@ -42,7 +42,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/fanout/connect-eventstream.git"
+    "url": "https://github.com/fanout/eventstream.git"
   },
   "readmeFilename": "README.md",
   "keywords": [

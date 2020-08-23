@@ -1,10 +1,10 @@
 export { default as IAddressedEvent } from './data/IAddressedEvent';
-export { default as IConnectEventStreamConfig } from './data/IConnectEventStreamConfig';
+export { default as IEventStreamConfig } from './data/IEventStreamConfig';
 export { default as IChannelsBuilder } from './data/IChannelsBuilder';
 export { default as IServerSentEvent } from './data/IServerSentEvent';
 
-export { default as ConnectEventStream } from './ConnectEventStream';
+export { default as EventStream } from './EventStream';
 
-export { getConnectEventStreamSingleton } from './utils/singleton';
+export { getEventStreamSingleton } from './utils/singleton';
 
 export type { GripPublisherSpec } from './data/GripPublisherSpec';

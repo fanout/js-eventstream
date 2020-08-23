@@ -7,7 +7,7 @@ import Debug from 'debug';
 import { ServeGrip, ServeGripApiRequest, ServeGripApiResponse } from '@fanoutio/serve-grip';
 
 import IChannelsBuilder from './data/IChannelsBuilder';
-import IConnectEventStreamConfig from './data/IConnectEventStreamConfig';
+import IEventStreamConfig from './data/IEventStreamConfig';
 
 import IServerSentEvent from './data/IServerSentEvent';
 import AddressedEvents from './AddressedEvents';
@@ -20,21 +20,21 @@ import { encodeEvent, joinEncodedEvents } from './utils/textEventStream';
 import { flattenHttpHeaders } from './utils/http';
 import { KEEP_ALIVE_TIMEOUT } from './constants';
 
-const debug = Debug('connect-eventstream');
+const debug = Debug('eventstream');
 
-export default class ConnectEventStream extends CallableInstance<[IncomingMessage, ServerResponse, Function], void> {
+export default class EventStream extends CallableInstance<[IncomingMessage, ServerResponse, Function], void> {
     private readonly addressedEvents: AddressedEvents;
     private readonly channelPublishers: { [channel: string]: ChannelPublisher } = {};
     private readonly serveGrip?: ServeGrip;
 
-    public constructor(params: IConnectEventStreamConfig | null) {
+    public constructor(params: IEventStreamConfig | null) {
         super('route');
 
         let { grip, gripPrefix } = params ?? {};
 
         if (grip != null) {
             const prefix = gripPrefix ?? 'events-';
-            debug('Initializing ConnectGrip with', { prefix, grip });
+            debug('Initializing ServeGrip with', { prefix, grip });
             this.serveGrip = new ServeGrip({
                 grip,
                 prefix,
@@ -43,7 +43,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
         // all events written to all channels as { channel, event } objects
         this.addressedEvents = new AddressedEvents();
-        this.addressedEvents.addListener((e) => debug('connect-eventstream event', e));
+        this.addressedEvents.addListener((e) => debug('eventstream event', e));
 
         if (this.serveGrip != null) {
             const publisher = this.serveGrip.getPublisher();
@@ -115,7 +115,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         let channelsBuilder: IChannelsBuilder;
 
         if (params.length === 0) {
-            throw new Error('connectEventStream must be called with at least one parameter.');
+            throw new Error('eventStream must be called with at least one parameter.');
         }
 
         if (typeof params[0] === 'function') {
@@ -173,9 +173,9 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         }
         debug('Type accepted by client');
 
-        // Run ConnectGrip if it hasn't been run yet.
+        // Run ServeGrip if it hasn't been run yet.
         if (req.grip == null && this.serveGrip != null) {
-            debug('Running ConnectGrip');
+            debug('Running ServeGrip');
             await this.serveGrip.run(req, res);
         }
 

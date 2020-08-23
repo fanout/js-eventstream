@@ -1,5 +1,5 @@
-import ConnectEventStream from '../ConnectEventStream';
-import IConnectEventStreamConfig from '../data/IConnectEventStreamConfig';
+import EventStream from '../EventStream';
+import IEventStreamConfig from '../data/IEventStreamConfig';
 
 const processLocalValues = {};
 function getDevProcessSingleton(key: string, factory: () => object) {
@@ -19,11 +19,8 @@ function getDevProcessSingleton(key: string, factory: () => object) {
     return dict[key];
 }
 
-export function getConnectEventStreamSingleton(
-    params: IConnectEventStreamConfig | null,
-    singletonKey: string = 'connectEventStream',
-) {
+export function getEventStreamSingleton(params: IEventStreamConfig | null, singletonKey: string = 'eventStream') {
     return getDevProcessSingleton(singletonKey, () => {
-        return new ConnectEventStream(params);
+        return new EventStream(params);
     });
 }

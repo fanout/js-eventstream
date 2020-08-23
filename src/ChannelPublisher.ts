@@ -1,12 +1,12 @@
 import IServerSentEvent from './data/IServerSentEvent';
-import ConnectEventStream from './ConnectEventStream';
+import EventStream from './EventStream';
 import ChannelWritable from './stream/ChannelWritable';
 
 export default class ChannelPublisher {
-    private readonly parent: ConnectEventStream;
+    private readonly parent: EventStream;
     private readonly channel: string;
 
-    public constructor(parent: ConnectEventStream, channel: string) {
+    public constructor(parent: EventStream, channel: string) {
         this.parent = parent;
         this.channel = channel;
     }

@@ -5,7 +5,7 @@ import Debug from 'debug';
 import AddressedEvents from '../AddressedEvents';
 import IAddressedEvent from '../data/IAddressedEvent';
 
-const debug = Debug('connect-eventstream');
+const debug = Debug('eventstream');
 
 export default class AddressedEventsReadable extends Readable {
     private readonly addressedEvents: AddressedEvents;

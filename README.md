@@ -1,4 +1,4 @@
-# connect-eventstream
+# eventstream
 
 Utility library to facilitate the creation of endpoints that implement the
 [server-sent events (SSE)](https://en.wikipedia.org/wiki/Server-sent_events)
@@ -28,7 +28,7 @@ Based on Previous work by Justin Karneges <justin@fanout.io>, Benjamin Goering <
 
 ### Initialize
 
-Construct a `ConnectEventStream` object. This object's constructor takes an optional object that
+Construct a `EventStream` object. This object's constructor takes an optional object that
 has `grip` and `gripPrefix`.
 
 `grip` is optional and can be any of the following:
@@ -37,15 +37,15 @@ has `grip` and `gripPrefix`.
 2. a string. This will be parsed using `parseGripUri`.  The common use case would be to pass in `process.env.GRIP_URL`.
 3. an object that has `control_uri`, `control_iss`, and `key`, used to initialize a GRIP publisher.
 4. an array of objects described in 3.
-5. an instantiated `Publisher` object from `@fanoutio/grip`. Publishing through `connect-eventstream` will then end up
+5. an instantiated `Publisher` object from `@fanoutio/grip`. Publishing through `eventstream` will then end up
 publishing to all channels on that `Publisher` object.
 
 `gripPrefix` is optional and defaults to `'events-'` if not specified. This can be used to
 namespace GRIP events.
 
 ```javascript
-import { ConnectEventStream } from "@fanoutio/connect-eventstream";
-const connectEventStream = new ConnectEventStream({grip:process.env.GRIP_URI});
+import { EventStream } from "@fanoutio/eventstream";
+const eventStream = new EventStream({grip:process.env.GRIP_URI});
 ```
 
 You need to create this object once as a singleton and then refer to it from all routes,
@@ -59,25 +59,25 @@ publish each event from one place.
 
 ### Add Routes
 
-Add routes, and use `connectEventStream` to create handlers. For this you have two options:
+Add routes, and use `eventStream` to create handlers. For this you have two options:
 
-1. Call `connectEventStream` as a function, and pass in a string or array of strings. These strings will be used
+1. Call `eventStream` as a function, and pass in a string or array of strings. These strings will be used
 as the names of the channel(s) to listen to. Any tokens in the channel names delimited by `{` and `}` will be replaced
 by their corresponding values from route parameters.
 
 ```javascript
-import { ConnectEventStream } from "@fanoutio/connect-eventstream";
+import { EventStream } from "@fanoutio/eventstream";
 export const CHANNEL_NAME = 'test';
-const connectEventStream = new ConnectEventStream({grip:process.env.GRIP_URI});
+const eventStream = new EventStream({grip:process.env.GRIP_URI});
 
 // localhost:7999/api/events (listens on 'test' because it is literal string passed in)
-app.get('/api/events', connectEventStream(CHANNEL_NAME));
+app.get('/api/events', eventStream(CHANNEL_NAME));
 
 // localhost:7999/api/events/test (listens on 'test' because {id} is replaced by route parameter)
-app.get('/api/events/:id', connectEventStream('{id}'));
+app.get('/api/events/:id', eventStream('{id}'));
 ```
 
-2. (advanced) Call `connectEventStream` as a function, and pass in a function that takes a `request` object and returns
+2. (advanced) Call `eventStream` as a function, and pass in a function that takes a `request` object and returns
 a string or an array of strings. These strings will be used as the names of the channels to listen to.
 
 ### Publish Events
@@ -87,44 +87,44 @@ See Publishing Events section below
 ## To use in Next.js:
 
 Next.js's development server continuously monitors and rebuilds files.
-Each time this happens, your singleton instance of ConnectEventStream
+Each time this happens, your singleton instance of EventStream
 will be recreated and previous instances will become unreachable.
 
-To keep the singleton accessible, use the `getConnectEventStreamSingleton`
+To keep the singleton accessible, use the `getEventStreamSingleton`
 function exported from this package. This function takes an object as
 an argument, and this is the same object that you would pass to the
-constructor of `ConnectEventStream`.
+constructor of `EventStream`.
 
 ### Add Routes
 
 Add API routes to your to Next.js application in the standard way, to handle requests to serve
-event streams. From these API routes, call `connectEventStream` in the same way as in Express
+event streams. From these API routes, call `eventStream` in the same way as in Express
 and then export them as the default export from your route files. 
 
-1. Call `connectEventStream` and pass in a string or array of strings.
+1. Call `eventStream` and pass in a string or array of strings.
 
 /lib/eventStream.js
 ```javascript
-import { getConnectEventStreamSingleton } from "@fanoutio/connect-eventstream";
+import { getEventStreamSingleton } from "@fanoutio/eventstream";
 export const CHANNEL_NAME = 'test';
-export const connectEventStream = getConnectEventStreamSingleton({grip: process.env.GRIP_URL});
+export const eventStream = getEventStreamSingleton({grip: process.env.GRIP_URL});
 ```
 
 /api/events.js
 ```javascript
-import { connectEventStream, CHANNEL_NAME } from "../../lib/eventStream";
+import { eventStream, CHANNEL_NAME } from "../../lib/eventStream";
 // localhost:7999/api/events (listens on 'test' because it is literal string passed in)
-export default connectEventStream(CHANNEL_NAME);
+export default eventStream(CHANNEL_NAME);
 ```
 
 /api/events/[id].js
 ```javascript
-import { connectEventStream } from "../../lib/eventStream";
+import { eventStream } from "../../lib/eventStream";
 // localhost:7999/api/events/test (listens on 'test' because {id} is replaced by route parameter)
-export default connectEventStream('{id}');
+export default eventStream('{id}');
 ```
 
-2. (advanced) Call `connectEventStream` and pass in a function that returns a string or an
+2. (advanced) Call `eventStream` and pass in a function that returns a string or an
 array of strings.
 
 ### Publish Events
@@ -133,32 +133,32 @@ See Publishing Events section below
 
 ## Publishing Events
 
-To publish, call `connectEventStream.publishEvent(channel, { event, data })`.
+To publish, call `eventStream.publishEvent(channel, { event, data })`.
 `event` is the string name and `data` is a JavaScript object that represents the Server Sent
 Event. This is an `async` function, so you may `await` it if you wish to block until the event
 has sent. Notably, if GRIP is being used, this will block until GRIP publish has completed.  
 
 ```javascript
-await connectEventStream.publishEvent(CHANNEL_NAME, { event: 'message', 'data': { name: 'John' } });
+await eventStream.publishEvent(CHANNEL_NAME, { event: 'message', 'data': { name: 'John' } });
 ```
 
 Alternatively, if you will be sending many events to the same channel, you can get a
-`ChannelPublisher` by calling `connectEventStream.getChannelPublisher(channel)`.
+`ChannelPublisher` by calling `eventStream.getChannelPublisher(channel)`.
 Then you can call `publishEvent({ event, data })` on the returned object.
 
 ```javascript
-const publisher = connectEventStream.getChannelPublisher('test');
+const publisher = eventStream.getChannelPublisher('test');
 await publisher.publishEvent({ event: 'message', 'data': { name: 'Alice' } });
 await publisher.publishEvent({ event: 'message', 'data': { name: 'Bob' } });
 ```
 
-If you wish to pipe a stream, you can call `connectEventStream.createChannelWritable(channel)` and
+If you wish to pipe a stream, you can call `eventStream.createChannelWritable(channel)` and
 pass the name of a channel. This will return a `stream.Writeable` object whose `write()` method can
 be used to emit objects to clients listening to the appropriate channels from the event streams
 endpoints created above.
 
 ```javascript
-const writable = connectEventStream.createChannelWritable('test'); // or publisher.createWritable()
+const writable = eventStream.createChannelWritable('test'); // or publisher.createWritable()
 writable.write({ event: 'message', 'data': { baz: [ 'hi', 'ho', 'hello', ] } });
 writable.end();
 ```
@@ -171,15 +171,15 @@ publishing through GRIP.
 
 ### Direct invocation
 
-If you wish to run `connect-eventstream`'s functionality directly, for example
-in a conditional way, you may call `connectEventStream.run(req, res, channels)`.
+If you wish to run `eventstream`'s functionality directly, for example
+in a conditional way, you may call `eventStream.run(req, res, channels)`.
 
 ```javascript
 app.get('/', async (req, res, next) => {
-    // Only do connectEventStream if header 'foo' has value 'bar' 
+    // Only do eventStream if header 'foo' has value 'bar' 
     if (req.headers['foo'] === 'bar') {
         try {
-            await connectEventStream.run(req, res, ['test']);
+            await eventStream.run(req, res, ['test']);
         } catch(ex) {
             next(ex instanceof Error ? ex : new Error(ex));
         }
@@ -191,13 +191,13 @@ app.get('/', async (req, res, next) => {
 
 ### Multiple singletons
 
-`getConnectEventStreamSingleton` takes an optional second parameter.
+`getEventStreamSingleton` takes an optional second parameter.
 There may be advanced scenarios where you need more than one instance of
-`ConnectEventStream`. In such a case you can use this second parameter
+`EventStream`. In such a case you can use this second parameter
 to identify each instance.
 
 ```javascript
-import { getConnectEventStreamSingleton } from "@fanoutio/connect-eventstream";
-const connectEventStream1 = new getConnectEventStreamSingleton({grip:process.env.GRIP_URI_1});
-const connectEventStream2 = new getConnectEventStreamSingleton({grip:process.env.GRIP_URI_2});
+import { getEventStreamSingleton } from "@fanoutio/eventstream";
+const eventStream1 = new getEventStreamSingleton({grip:process.env.GRIP_URI_1});
+const eventStream2 = new getEventStreamSingleton({grip:process.env.GRIP_URI_2});
 ```

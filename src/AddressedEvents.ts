@@ -2,7 +2,7 @@ import Debug from 'debug';
 
 type Listener = (e: any) => Promise<void> | void;
 
-const debug = Debug('connect-eventstream');
+const debug = Debug('eventstream');
 
 export default class AddressedEvents {
     private listeners: Listener[] = [];

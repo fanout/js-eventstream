@@ -1,4 +1,4 @@
-# @fanoutio/connect-eventstream Changelog
+# @fanoutio/eventstream Changelog
 
 All notable changes to this project will be documented in this file.
 

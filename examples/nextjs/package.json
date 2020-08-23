@@ -1,0 +1,19 @@
+{
+  "name": "eventstream-example-nextjs",
+  "private": true,
+  "description": "Example for using connect-eventstream to publish the current time every second.",
+  "scripts": {
+    "dev": "next"
+  },
+  "author": "Katsuyuki Ohmuro <kats@fanout.io>",
+  "license": "MIT",
+  "dependencies": {
+    "@fanoutio/eventstream": "file:../..",
+    "next": "^9.5.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@types/react": "^16.9.46"
+  }
+}

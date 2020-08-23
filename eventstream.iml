@@ -7,7 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/build-esm" />
-      <excludeFolder url="file://$MODULE_DIR$/examples/basic/.next" />
+      <excludeFolder url="file://$MODULE_DIR$/examples/nextjs/.next" />
     </content>
     <orderEntry type="sourceFolder" forTests="false" />
   </component>

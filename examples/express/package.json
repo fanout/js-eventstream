@@ -1,0 +1,15 @@
+{
+  "name": "eventstream-example-express",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "node server.js"
+  },
+  "private": true,
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@fanoutio/eventstream": "file:../..",
+    "express": "^4.17.1"
+  }
+}

@@ -4,7 +4,7 @@ import accepts from 'accepts';
 import CallableInstance from 'callable-instance';
 import Debug from 'debug';
 
-import { ConnectGrip, ConnectGripApiRequest, ConnectGripApiResponse, } from "@fanoutio/connect-grip";
+import { ServeGrip, ServeGripApiRequest, ServeGripApiResponse, } from "@fanoutio/serve-grip";
 
 import IChannelsBuilder from "./data/IChannelsBuilder";
 import IConnectEventStreamConfig from './data/IConnectEventStreamConfig';
@@ -26,7 +26,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
     private readonly addressedEvents: AddressedEvents;
     private readonly channelPublishers: { [channel: string] : ChannelPublisher; } = {};
-    private readonly connectGrip: ConnectGrip;
+    private readonly serveGrip?: ServeGrip;
 
     public constructor(params: IConnectEventStreamConfig | null) {
         super('route');
@@ -39,7 +39,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         if (grip != null) {
             const prefix = gripPrefix ?? 'events-';
             debug("Initializing ConnectGrip with", { prefix, grip, });
-            this.connectGrip = new ConnectGrip({
+            this.serveGrip = new ServeGrip({
                 grip,
                 prefix,
             });
@@ -49,8 +49,8 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         this.addressedEvents = new AddressedEvents();
         this.addressedEvents.addListener(e => debug('connect-eventstream event', e));
 
-        if (this.connectGrip != null) {
-            const publisher = this.connectGrip.getPublisher();
+        if (this.serveGrip != null) {
+            const publisher = this.serveGrip.getPublisher();
             this.addressedEvents.addListener(async ({ channel, event, }) => {
                 const encodedEvent = encodeEvent({
                     event: event.event,
@@ -154,7 +154,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
             const channels = channelsBuilder(req);
 
             try {
-                await this.run(req as ConnectGripApiRequest, res as ConnectGripApiResponse, channels);
+                await this.run(req as ServeGripApiRequest, res as ServeGripApiResponse, channels);
             } catch(ex) {
                 ex = ex instanceof Error ? ex : new Error(ex);
                 if (useFnForError) {
@@ -168,7 +168,7 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
 
     }
 
-    public async run(req: ConnectGripApiRequest, res: ConnectGripApiResponse, channels: string | string[]) {
+    public async run(req: ServeGripApiRequest, res: ServeGripApiResponse, channels: string | string[]) {
 
         debug("Beginning NextjsEventStream.run");
 
@@ -183,9 +183,9 @@ export default class ConnectEventStream extends CallableInstance<[IncomingMessag
         debug("Type accepted by client");
 
         // Run ConnectGrip if it hasn't been run yet.
-        if (req.grip == null && this.connectGrip != null) {
+        if (req.grip == null && this.serveGrip != null) {
             debug("Running ConnectGrip");
-            await this.connectGrip.run(req, res);
+            await this.serveGrip.run(req, res);
         }
 
         const requestGrip = req.grip;

@@ -3,6 +3,7 @@ import Debug from 'debug';
 
 import ChannelPublisher from '../ChannelPublisher';
 import IServerSentEvent from '../data/IServerSentEvent';
+import { NodeCallback } from '../utils/node';
 
 const debug = Debug('eventstream');
 
@@ -16,7 +17,7 @@ export default class ChannelWritable extends Writable {
         this.channelPublisher = channelPublisher;
     }
 
-    public async _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: Function) {
+    public async _write(event: IServerSentEvent, _encoding: BufferEncoding, callback: NodeCallback) {
         let err: Error | undefined;
         try {
             debug('ChannelWritable.write');
@@ -30,7 +31,7 @@ export default class ChannelWritable extends Writable {
         // (if GRIP is enabled then it won't return until GRIP publish has finished)
         // For this reason this should apply backpressure to the writing.
 
-        if (err) {
+        if (err != null) {
             callback(err);
         } else {
             callback();

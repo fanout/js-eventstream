@@ -23,7 +23,10 @@ import { KEEP_ALIVE_TIMEOUT } from './constants';
 
 const debug = Debug('eventstream');
 
-export default class EventStream extends CallableInstance<[IncomingMessage, ServerResponse, Function], void> {
+type NextFunction = (e?: Error) => void;
+type HandlerFunction = (req: IncomingMessage, res: ServerResponse, fn: NextFunction) => Promise<void>;
+
+export default class EventStream extends CallableInstance<[IncomingMessage, ServerResponse, NextFunction], void> {
     private readonly addressedEvents: AddressedEvents;
     private readonly channelPublishers: { [channel: string]: ChannelPublisher } = {};
     private readonly serveGrip?: ServeGrip;
@@ -31,7 +34,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
     public constructor(params: IEventStreamConfig | null) {
         super('route');
 
-        let { grip, gripPrefix } = params ?? {};
+        const { grip, gripPrefix } = params ?? {};
 
         if (grip != null) {
             const prefix = gripPrefix ?? 'events-';
@@ -109,10 +112,10 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
         );
     }
 
-    public route(...channelNames: string[]): Function;
-    public route(channelNames: string[]): Function;
-    public route(channelBuilder: IChannelsBuilder): Function;
-    public route(...params: any[]): Function {
+    public route(...channelNames: string[]): HandlerFunction;
+    public route(channelNames: string[]): HandlerFunction;
+    public route(channelBuilder: IChannelsBuilder): HandlerFunction;
+    public route(...params: any[]): HandlerFunction {
         let channelsBuilder: IChannelsBuilder;
 
         if (params.length === 0) {
@@ -138,7 +141,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
 
         debug('Called with configuration data, configuring and returning Connect middleware.');
 
-        return async (req: IncomingMessage, res: ServerResponse, fn: Function): Promise<void> => {
+        return async (req: IncomingMessage, res: ServerResponse, fn: NextFunction): Promise<void> => {
             const useFnForError = fn != null;
             if (useFnForError) {
                 debug('Called with 3 params, will call fn(error) to handle errors.');
@@ -209,8 +212,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
         if (channels.length === 0) {
             debug('No specified channels.');
             res.statusCode = 400;
-            let message = `No specified channels.`;
-            res.end(`${message}\n`);
+            res.end('No specified channels.\n');
             return;
         }
 

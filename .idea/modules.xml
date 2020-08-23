@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/eventstream.iml" filepath="$PROJECT_DIR$/eventstream.iml" />
+      <module fileurl="file://$PROJECT_DIR$/js-eventstream.iml" filepath="$PROJECT_DIR$/js-eventstream.iml" />
     </modules>
   </component>
 </project>

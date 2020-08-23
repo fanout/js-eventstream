@@ -6,7 +6,7 @@ import { encodeEvent } from '../utils/textEventStream';
 import { KEEP_ALIVE_TIMEOUT } from '../constants';
 
 export default class ServerSentEventsSerializer extends Transform {
-    private keepAliveTimer: NodeJS.Timeout | null;
+    private keepAliveTimer: ReturnType<typeof setTimeout> | null;
 
     public constructor () {
         super({ writableObjectMode: true });

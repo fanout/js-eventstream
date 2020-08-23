@@ -20,6 +20,7 @@ export default class AddressedEventsReadable extends Readable {
         this.addressedEvents = addressedEvents;
         debug('AddressedEventsReadable constructed with channels', channels);
         this.channels = channels;
+        this.listenHandle = null;
     }
 
     public _read(_size: number) {

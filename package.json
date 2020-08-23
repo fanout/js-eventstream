@@ -1,6 +1,6 @@
 {
   "name": "@fanoutio/eventstream",
-  "version": "0.0.1-beta.6",
+  "version": "0.0.1-beta.7",
   "author": "Fanout, Inc. <info@fanout.io>",
   "description": "Connect-compatible middleware that enables the easy creation of EventStream endpoints",
   "contributors": [

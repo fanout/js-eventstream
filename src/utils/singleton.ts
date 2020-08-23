@@ -1,8 +1,5 @@
-import EventStream from '../EventStream';
-import IEventStreamConfig from '../data/IEventStreamConfig';
-
-const processLocalValues = {};
-function getDevProcessSingleton(key: string, factory: () => object) {
+const singletons = {};
+export function getProcessSingletons(): { [key: string]: any } {
     let dict;
     if (process.env.NODE_ENV !== 'production') {
         const proc = process as any;
@@ -11,16 +8,15 @@ function getDevProcessSingleton(key: string, factory: () => object) {
         }
         dict = proc.devSingletons;
     } else {
-        dict = processLocalValues;
+        dict = singletons;
     }
-    if (dict[key] == null) {
-        dict[key] = factory();
-    }
-    return dict[key];
+    return dict;
 }
 
-export function getEventStreamSingleton(params: IEventStreamConfig | null, singletonKey: string = 'eventStream') {
-    return getDevProcessSingleton(singletonKey, () => {
-        return new EventStream(params);
-    });
+export function getProcessSingleton(key: string, fn: () => any): any {
+    const dict = getProcessSingletons();
+    if (!(key in dict)) {
+        dict[key] = fn();
+    }
+    return dict[key];
 }

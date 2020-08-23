@@ -18,6 +18,7 @@ import AddressedEventsReadable from './stream/AddressedEventsReadable';
 
 import { encodeEvent, joinEncodedEvents } from './utils/textEventStream';
 import { flattenHttpHeaders } from './utils/http';
+import { getProcessSingleton } from './utils/singleton';
 import { KEEP_ALIVE_TIMEOUT } from './constants';
 
 const debug = Debug('eventstream');
@@ -258,4 +259,10 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
             .on('finish', () => debug('Response finish (no more writes)'))
             .on('close', () => debug('Response close'));
     }
+}
+
+export function getEventStreamSingleton(params: IEventStreamConfig | null, singletonKey: string = 'eventStream') {
+    return getProcessSingleton(singletonKey, () => {
+        return new EventStream(params);
+    });
 }

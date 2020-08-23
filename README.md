@@ -198,6 +198,6 @@ to identify each instance.
 
 ```javascript
 import { getEventStreamSingleton } from "@fanoutio/eventstream";
-const eventStream1 = new getEventStreamSingleton({grip:process.env.GRIP_URI_1});
-const eventStream2 = new getEventStreamSingleton({grip:process.env.GRIP_URI_2});
+const eventStream1 = new getEventStreamSingleton({grip:process.env.GRIP_URI_1}, "eventStream1");
+const eventStream2 = new getEventStreamSingleton({grip:process.env.GRIP_URI_2}, "eventStream2");
 ```

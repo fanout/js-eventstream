@@ -184,7 +184,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
         }
 
         const requestGrip = req.grip;
-        if (requestGrip.isProxied) {
+        if (requestGrip?.isProxied) {
             debug('This is a GRIP-proxied request');
             if (requestGrip.needsSigned && !requestGrip.isSigned) {
                 req.statusCode = 403;
@@ -192,7 +192,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
                 return;
             }
         }
-        if (requestGrip.isSigned) {
+        if (requestGrip?.isSigned) {
             debug('This is a GRIP-signed request');
         }
 

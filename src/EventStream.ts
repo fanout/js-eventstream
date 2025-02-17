@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from 'http';
+import type { IncomingMessage, ServerResponse } from 'node:http';
 
 import accepts from 'accepts';
 import CallableInstance from 'callable-instance';

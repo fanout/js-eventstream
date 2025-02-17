@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [2.0.0] - 2025-02-17
+
 - Release to npmjs using CI workflow
 - Use type imports for http
 - Update for module, TypeScript 5, testing under Node, and coverage
@@ -30,7 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Version.
 
-[unreleased]: https://github.com/fanout/js-serve-grip/compare/v1.0.3...HEAD
+[unreleased]: https://github.com/fanout/js-serve-grip/compare/v2.0.0...HEAD
+[1.0.4]: https://github.com/fanout/js-serve-grip/compare/1.0.3...2.0.0
 [1.0.3]: https://github.com/fanout/js-serve-grip/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/fanout/js-serve-grip/compare/1.0.1...1.0.3
 [1.0.1]: https://github.com/fanout/js-serve-grip/compare/1.0.0...1.0.1

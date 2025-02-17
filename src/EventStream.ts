@@ -26,7 +26,12 @@ const debug = Debug('eventstream');
 type NextFunction = (e?: Error) => void;
 type HandlerFunction = (req: IncomingMessage, res: ServerResponse, fn: NextFunction) => Promise<void>;
 
-export default class EventStream extends CallableInstance<[IncomingMessage, ServerResponse, NextFunction], void> {
+type RouteParams =
+    | string[]
+    | [string[]]
+    | [IChannelsBuilder];
+
+export default class EventStream extends CallableInstance<RouteParams, HandlerFunction> {
     private readonly addressedEvents: AddressedEvents;
     private readonly channelPublishers: { [channel: string]: ChannelPublisher } = {};
     private readonly serveGrip?: ServeGrip;

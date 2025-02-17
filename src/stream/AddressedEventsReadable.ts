@@ -2,8 +2,8 @@ import { Readable } from 'stream';
 
 import Debug from 'debug';
 
-import AddressedEvents from '../AddressedEvents';
-import IAddressedEvent from '../data/IAddressedEvent';
+import AddressedEvents from '../AddressedEvents.js';
+import IAddressedEvent from '../data/IAddressedEvent.js';
 
 const debug = Debug('eventstream');
 

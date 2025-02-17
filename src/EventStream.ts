@@ -4,22 +4,22 @@ import accepts from 'accepts';
 import CallableInstance from 'callable-instance';
 import Debug from 'debug';
 
-import { ServeGrip, ServeGripApiRequest, ServeGripApiResponse } from '@fanoutio/serve-grip';
+import { ServeGrip, } from '@fanoutio/serve-grip';
 
-import IChannelsBuilder from './data/IChannelsBuilder';
-import IEventStreamConfig from './data/IEventStreamConfig';
+import IChannelsBuilder from './data/IChannelsBuilder.js';
+import IEventStreamConfig from './data/IEventStreamConfig.js';
 
-import IServerSentEvent from './data/IServerSentEvent';
-import AddressedEvents from './AddressedEvents';
+import IServerSentEvent from './data/IServerSentEvent.js';
+import AddressedEvents from './AddressedEvents.js';
 
-import ChannelPublisher from './ChannelPublisher';
-import ServerSentEventsSerializer from './stream/ServerSentEventsSerializer';
-import AddressedEventsReadable from './stream/AddressedEventsReadable';
+import ChannelPublisher from './ChannelPublisher.js';
+import ServerSentEventsSerializer from './stream/ServerSentEventsSerializer.js';
+import AddressedEventsReadable from './stream/AddressedEventsReadable.js';
 
-import { encodeEvent, joinEncodedEvents } from './utils/textEventStream';
-import { flattenHttpHeaders } from './utils/http';
-import { getProcessSingleton } from './utils/singleton';
-import { KEEP_ALIVE_TIMEOUT } from './constants';
+import { encodeEvent, joinEncodedEvents } from './utils/textEventStream.js';
+import { flattenHttpHeaders } from './utils/http.js';
+import { getProcessSingleton } from './utils/singleton.js';
+import { KEEP_ALIVE_TIMEOUT } from './constants.js';
 
 const debug = Debug('eventstream');
 
@@ -94,7 +94,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
         // Request URL: /api/channel/test
         // req.query: { "channelId": "test" }
 
-        let paramsObj: object | null = null;
+        let paramsObj: Record<string, string> | null = null;
 
         const reqAsAny = req as any;
         if (reqAsAny.params != null) {
@@ -106,7 +106,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
         }
 
         return channels.map((ch) =>
-            ch.replace(regex, (_substring, token1) => {
+            ch.replace(regex, (_substring, token1: string) => {
                 return paramsObj?.[token1] ?? '';
             }),
         );
@@ -115,7 +115,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
     public route(...channelNames: string[]): HandlerFunction;
     public route(channelNames: string[]): HandlerFunction;
     public route(channelBuilder: IChannelsBuilder): HandlerFunction;
-    public route(...params: any[]): HandlerFunction {
+    public route(...params: unknown[]): HandlerFunction {
         let channelsBuilder: IChannelsBuilder;
 
         if (params.length === 0) {
@@ -124,7 +124,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
 
         if (typeof params[0] === 'function') {
             debug('Treating parameter as channel builder function');
-            channelsBuilder = params[0];
+            channelsBuilder = params[0] as IChannelsBuilder;
         } else {
             // Channel names is
             let channelNames: string[];
@@ -134,7 +134,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
                 channelNames = params[0];
             } else {
                 debug('Parameters are spread, treating as list of channel names');
-                channelNames = params;
+                channelNames = params as string[];
             }
             channelsBuilder = (req) => this.buildChannels(req, channelNames);
         }
@@ -152,19 +152,19 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
             const channels = channelsBuilder(req);
 
             try {
-                await this.run(req as ServeGripApiRequest, res as ServeGripApiResponse, channels);
+                await this.run(req, res, channels);
             } catch (ex) {
-                ex = ex instanceof Error ? ex : new Error(ex);
+                const error = ex instanceof Error ? ex : new Error(String(ex));
                 if (useFnForError) {
-                    fn(ex);
+                    fn(error);
                 } else {
-                    throw ex;
+                    throw error;
                 }
             }
         };
     }
 
-    public async run(req: ServeGripApiRequest, res: ServeGripApiResponse, channels: string | string[]) {
+    public async run(req: IncomingMessage, res: ServerResponse, channels: string | string[]) {
         debug('Beginning NextjsEventStream.run');
 
         const accept = accepts(req);
@@ -232,7 +232,7 @@ export default class EventStream extends CallableInstance<[IncomingMessage, Serv
 
         if (requestGrip?.isProxied) {
             // Use a GRIP hold to keep a stream going
-            const gripInstruct = res.grip.startInstruct();
+            const gripInstruct = res.grip!.startInstruct();
             gripInstruct.setHoldStream();
             gripInstruct.addChannel(channels);
             const keepAliveValue = encodeEvent({

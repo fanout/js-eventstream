@@ -1,10 +1,10 @@
 import { Transform } from 'stream';
 
-import IServerSentEvent from '../data/IServerSentEvent';
-import { encodeEvent } from '../utils/textEventStream';
+import IServerSentEvent from '../data/IServerSentEvent.js';
+import { encodeEvent } from '../utils/textEventStream.js';
 
-import { KEEP_ALIVE_TIMEOUT } from '../constants';
-import { NodeCallback } from '../utils/node';
+import { KEEP_ALIVE_TIMEOUT } from '../constants.js';
+import { NodeCallback } from '../utils/node.js';
 
 export default class ServerSentEventsSerializer extends Transform {
     private keepAliveTimer: ReturnType<typeof setTimeout> | null;
@@ -24,7 +24,7 @@ export default class ServerSentEventsSerializer extends Transform {
             });
             this.push(encodedEvent);
         } catch (ex) {
-            const err = ex instanceof Error ? ex : new Error(ex);
+            const err = ex instanceof Error ? ex : new Error(String(ex));
             callback(err);
             return;
         }

@@ -1,9 +1,9 @@
 import { Writable } from 'stream';
 import Debug from 'debug';
 
-import ChannelPublisher from '../ChannelPublisher';
-import IServerSentEvent from '../data/IServerSentEvent';
-import { NodeCallback } from '../utils/node';
+import ChannelPublisher from '../ChannelPublisher.js';
+import IServerSentEvent from '../data/IServerSentEvent.js';
+import { NodeCallback } from '../utils/node.js';
 
 const debug = Debug('eventstream');
 
@@ -24,7 +24,7 @@ export default class ChannelWritable extends Writable {
 
             await this.channelPublisher.publishEvent(event);
         } catch (ex) {
-            err = ex instanceof Error ? ex : new Error(ex);
+            err = ex instanceof Error ? ex : new Error(String(ex));
         }
 
         // The above is an async method that doesn't return until the publish has finished

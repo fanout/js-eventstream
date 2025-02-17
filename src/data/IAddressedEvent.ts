@@ -1,4 +1,4 @@
-import IServerSentEvent from './IServerSentEvent';
+import IServerSentEvent from './IServerSentEvent.js';
 
 export default interface IAddressedEvent {
     channel: string;

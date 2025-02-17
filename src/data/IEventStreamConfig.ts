@@ -1,4 +1,4 @@
-import { GripPublisherSpec } from './GripPublisherSpec';
+import { GripPublisherSpec } from './GripPublisherSpec.js';
 
 export default interface IEventStreamConfig {
     grip?: GripPublisherSpec;

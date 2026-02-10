@@ -1,6 +1,6 @@
 {
   "name": "@fanoutio/eventstream",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "author": "Fanout, Inc. <info@fanout.io>",
   "description": "Connect-compatible middleware that enables the easy creation of EventStream endpoints",

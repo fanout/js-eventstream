@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+## [2.0.1] - 2026-02-10
+
 - Release to npmjs using updated CI workflow
 - Rename master branch to main
 - Correct links in changelog
@@ -36,7 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Version.
 
-[unreleased]: https://github.com/fanout/js-eventstream/compare/v2.0.0...HEAD
+[unreleased]: https://github.com/fanout/js-eventstream/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/fanout/js-eventstream/compare/2.0.0...2.0.1
 [2.0.0]: https://github.com/fanout/js-eventstream/compare/1.0.3...2.0.0
 [1.0.3]: https://github.com/fanout/js-eventstream/compare/1.0.2...1.0.3
 [1.0.2]: https://github.com/fanout/js-eventstream/compare/1.0.1...1.0.3

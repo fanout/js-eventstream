@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [unreleased]
 
+- Release to npmjs using updated CI workflow
+- Rename master branch to main
+- Correct links in changelog
+
 ## [2.0.0] - 2025-02-17
 
 - Release to npmjs using CI workflow
@@ -32,9 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial Version.
 
-[unreleased]: https://github.com/fanout/js-serve-grip/compare/v2.0.0...HEAD
-[1.0.4]: https://github.com/fanout/js-serve-grip/compare/1.0.3...2.0.0
-[1.0.3]: https://github.com/fanout/js-serve-grip/compare/1.0.2...1.0.3
-[1.0.2]: https://github.com/fanout/js-serve-grip/compare/1.0.1...1.0.3
-[1.0.1]: https://github.com/fanout/js-serve-grip/compare/1.0.0...1.0.1
-[1.0.0]: https://github.com/fanout/js-serve-grip/releases/tag/1.0.0
+[unreleased]: https://github.com/fanout/js-eventstream/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/fanout/js-eventstream/compare/1.0.3...2.0.0
+[1.0.3]: https://github.com/fanout/js-eventstream/compare/1.0.2...1.0.3
+[1.0.2]: https://github.com/fanout/js-eventstream/compare/1.0.1...1.0.3
+[1.0.1]: https://github.com/fanout/js-eventstream/compare/1.0.0...1.0.1
+[1.0.0]: https://github.com/fanout/js-eventstream/releases/tag/1.0.0
